@@ -3,7 +3,7 @@ import {
   Menu, X, Dumbbell, Users, Clock, Zap, 
   CheckCircle, ArrowRight, Smartphone, 
   Instagram, Twitter, Facebook, MapPin, 
-  Briefcase, Heart, Mail, Phone, ChevronRight, Star
+  Briefcase, Heart, Mail, Phone, ChevronRight, Star, Play
 } from 'lucide-react';
 import "./App.css"
 
@@ -17,43 +17,40 @@ const AnimationStyles = () => (
       from { opacity: 0; transform: translateY(40px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
     }
-    @keyframes glow {
-      0% { box-shadow: 0 0 5px #dc2626; }
-      50% { box-shadow: 0 0 20px #dc2626, 0 0 10px #ef4444; }
-      100% { box-shadow: 0 0 5px #dc2626; }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.5); }
+      50% { box-shadow: 0 0 30px rgba(220, 38, 38, 0.8); }
     }
     .reveal {
       opacity: 0;
-      transform: translateY(40px);
+      transform: translateY(30px);
       transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
     }
     .reveal.active {
       opacity: 1;
       transform: translateY(0);
     }
-    .hover-glow:hover {
-      box-shadow: 0 0 25px rgba(220, 38, 38, 0.4);
+    /* Text Stroke Effect */
+    .text-stroke {
+      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+      color: transparent;
+    }
+    .text-stroke-red {
+      -webkit-text-stroke: 1px #dc2626;
+      color: transparent;
     }
     .bg-grid-pattern {
-      background-image: linear-gradient(to right, #1f1f1f 1px, transparent 1px),
-                        linear-gradient(to bottom, #1f1f1f 1px, transparent 1px);
+      background-image: linear-gradient(to right, #27272a 1px, transparent 1px),
+                        linear-gradient(to bottom, #27272a 1px, transparent 1px);
       background-size: 40px 40px;
       mask-image: linear-gradient(to bottom, transparent, black, transparent);
     }
-    .text-gradient {
-      background: linear-gradient(to right, #fff, #999);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .text-gradient-red {
-      background: linear-gradient(to right, #ef4444, #991b1b);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .clip-slant {
+      clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%);
     }
   `}</style>
 );
@@ -75,7 +72,7 @@ const RevealOnScroll = ({ children, className = "", delay = 0 }) => {
 };
 
 /* =========================================
-   1. NAVBAR
+   1. NAVBAR (Completely Redesigned)
    ========================================= */
 
 const Navbar = ({ currentPage, setCurrentPage }) => {
@@ -89,73 +86,193 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
   }, []);
 
   const handleNav = (page, e) => {
-    e.preventDefault();
+    e?.preventDefault();
     setCurrentPage(page);
     setIsOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'bg-black/90 backdrop-blur-md py-2 border-b border-red-900/30' : 'bg-transparent py-6'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14">
-          
-          {/* Logo */}
-          <div className="flex-shrink-0 cursor-pointer" onClick={(e) => handleNav('home', e)}>
-            <img 
-              src="https://aheadfitness.ng/img/logo2.png" 
-              alt="Ahead Fitness" 
-              className="h-12 w-auto object-contain hover:brightness-125 transition-all duration-300" 
-            />
-          </div>
+    <>
+      <nav className={`fixed w-full z-50 transition-all duration-500 border-b ${scrolled ? 'bg-black/80 backdrop-blur-md border-white/10 py-3' : 'bg-transparent border-transparent py-6'}`}>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between">
+            
+            {/* Logo */}
+            <div className="flex-shrink-0 cursor-pointer z-50" onClick={(e) => handleNav('home', e)}>
+              <img 
+                src="https://aheadfitness.ng/img/logo2.png" 
+                alt="Ahead Fitness" 
+                className="h-10 md:h-12 w-auto object-contain brightness-200" 
+              />
+            </div>
 
-          {/* Desktop Links */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center space-x-10">
               {['Home', 'About', 'Services', 'Pricing'].map((item) => (
                 <a 
                   key={item} 
                   href={`#${item.toLowerCase()}`} 
                   onClick={(e) => handleNav('home', e)}
-                  className={`text-sm font-bold uppercase tracking-widest transition-all duration-300 hover:text-red-500 relative group ${currentPage === 'home' ? 'text-gray-200' : 'text-gray-400'}`}
+                  className="text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-white relative group transition-colors"
                 >
                   {item}
-                  <span className="absolute -bottom-2 left-0 w-0 h-0.5 bg-red-600 transition-all duration-300 group-hover:w-full"></span>
+                  <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-red-600 transition-all duration-300 group-hover:w-full"></span>
                 </a>
               ))}
-              <button 
-                onClick={(e) => handleNav('careers', e)}
-                className={`px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 border ${currentPage === 'careers' ? 'bg-red-600 border-red-600 text-white' : 'border-red-600 text-red-500 hover:bg-red-600 hover:text-white hover:shadow-[0_0_15px_rgba(220,38,38,0.5)]'}`}
-              >
-                Careers
+              
+              <div className="flex items-center gap-4 ml-6">
+                <button 
+                  onClick={(e) => handleNav('careers', e)}
+                  className="text-sm font-bold uppercase tracking-widest text-white hover:text-red-500 transition-colors"
+                >
+                  Careers
+                </button>
+                <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-sm font-bold uppercase tracking-widest text-xs transition-all transform hover:-translate-y-1 shadow-[0_0_15px_rgba(220,38,38,0.4)] clip-slant">
+                  Join Now
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Toggle */}
+            <div className="md:hidden z-50">
+              <button onClick={() => setIsOpen(!isOpen)} className="text-white hover:text-red-500 transition-colors p-2">
+                {isOpen ? <X size={32} /> : <Menu size={32} />}
               </button>
             </div>
           </div>
-
-          {/* Mobile Toggle */}
-          <div className="md:hidden">
-            <button onClick={() => setIsOpen(!isOpen)} className="text-white hover:text-red-500 transition-colors">
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
-          </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile Menu */}
-      <div className={`md:hidden absolute w-full bg-zinc-950/95 backdrop-blur-xl border-b border-red-900 transition-all duration-500 overflow-hidden ${isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="px-4 pt-4 pb-6 space-y-2 text-center">
-          {['Home', 'About', 'Services', 'Pricing'].map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`} onClick={(e) => handleNav('home', e)} className="block py-3 text-lg font-medium text-gray-300 hover:text-red-500 hover:bg-white/5 rounded-lg transition-colors">{item}</a>
+      {/* Mobile Full Screen Menu */}
+      <div className={`fixed inset-0 bg-black z-40 flex flex-col items-center justify-center transition-all duration-500 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}>
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+        
+        <div className="flex flex-col space-y-8 text-center relative z-10">
+          {['Home', 'About', 'Services', 'Pricing'].map((item, idx) => (
+            <a 
+              key={item} 
+              href={`#${item.toLowerCase()}`} 
+              onClick={(e) => handleNav('home', e)}
+              className={`text-4xl font-black uppercase text-transparent text-stroke hover:text-white hover:text-stroke-none transition-all duration-300 transform ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+              style={{ transitionDelay: `${idx * 100}ms` }}
+            >
+              {item}
+            </a>
           ))}
-          <a onClick={(e) => handleNav('careers', e)} className="block py-3 text-lg font-bold text-red-500 bg-red-500/10 rounded-lg mt-4 cursor-pointer">Careers</a>
+          <a 
+            onClick={(e) => handleNav('careers', e)} 
+            className={`text-4xl font-black uppercase text-red-600 hover:text-red-500 cursor-pointer transform ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+            style={{ transitionDelay: '400ms' }}
+          >
+            Careers
+          </a>
         </div>
       </div>
-    </nav>
+    </>
   );
 };
 
 /* =========================================
-   2. APP DOWNLOAD SECTION (Updated)
+   2. HERO SECTION (Completely Redesigned)
+   ========================================= */
+
+const Hero = () => (
+  <div id="home" className="relative h-screen min-h-[700px] flex items-center overflow-hidden bg-black">
+    {/* Dynamic Background with Overlays */}
+    <div className="absolute inset-0 z-0">
+      <img 
+        src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1950&q=80" 
+        alt="Gym Background" 
+        className="w-full h-full object-cover opacity-60 scale-105 animate-[pulse_10s_ease-in-out_infinite]" 
+      />
+      {/* Heavy Gradient Overlay for Text Readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60"></div>
+    </div>
+
+    {/* Content */}
+    <div className="relative z-10 max-w-7xl mx-auto px-6 w-full mt-16">
+      <div className="max-w-3xl">
+        <RevealOnScroll>
+          <div className="flex items-center gap-3 mb-6">
+            <span className="h-[2px] w-12 bg-red-600"></span>
+            <span className="text-red-500 font-bold text-sm uppercase tracking-[0.3em]">Est. 2015</span>
+          </div>
+
+          <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white leading-[0.9] tracking-tighter mb-8">
+            FORGE <br />
+            <span className="text-stroke">YOUR</span> <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-900">LEGACY</span>
+          </h1>
+
+          <p className="text-lg md:text-xl text-gray-300 max-w-lg mb-10 leading-relaxed font-light border-l-4 border-red-600 pl-6">
+            Stop wishing. Start working. Join the elite fitness community dedicated to breaking limits and setting new standards.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-5">
+            <button className="bg-red-600 text-white px-10 py-4 font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-[0_0_20px_rgba(220,38,38,0.5)] clip-slant flex items-center justify-center gap-2 group">
+              Start Trial <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
+            </button>
+            <button className="border border-white/30 text-white px-10 py-4 font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
+              <Play size={18} fill="currentColor" /> Watch Video
+            </button>
+          </div>
+        </RevealOnScroll>
+      </div>
+    </div>
+
+    {/* Decorative Elements */}
+    <div className="absolute bottom-10 right-10 hidden md:flex items-center gap-12 z-10">
+      <div>
+        <h4 className="text-3xl font-black text-white">01</h4>
+        <p className="text-xs text-gray-400 uppercase tracking-widest">Motivation</p>
+      </div>
+      <div className="h-12 w-[1px] bg-white/20"></div>
+      <div>
+        <h4 className="text-3xl font-black text-white">02</h4>
+        <p className="text-xs text-gray-400 uppercase tracking-widest">Discipline</p>
+      </div>
+      <div className="h-12 w-[1px] bg-white/20"></div>
+      <div>
+        <h4 className="text-3xl font-black text-white">03</h4>
+        <p className="text-xs text-gray-400 uppercase tracking-widest">Success</p>
+      </div>
+    </div>
+  </div>
+);
+
+/* =========================================
+   3. FEATURES SECTION (Standard)
+   ========================================= */
+
+const Features = () => (
+  <section className="py-24 bg-zinc-950 text-white relative">
+    <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { icon: <Dumbbell />, title: "Pro Equipment", desc: "Train with the best Hammer Strength machinery." },
+          { icon: <Zap />, title: "HIIT Zones", desc: "Dedicated areas for high-intensity explosive workouts." },
+          { icon: <Users />, title: "Community", desc: "Join a tribe that motivates you to show up every day." },
+          { icon: <Clock />, title: "24/7 Access", desc: "Train on your schedule with round-the-clock access." }
+        ].map((f, i) => (
+          <RevealOnScroll key={i} delay={i * 100} className="bg-zinc-900/50 backdrop-blur-sm p-8 border border-zinc-800 hover:border-red-600 transition-all duration-500 group hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(220,38,38,0.1)] rounded-xl">
+            <div className="mb-6 w-14 h-14 bg-black rounded-lg flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-500 shadow-lg">
+              {React.cloneElement(f.icon, { size: 28 })}
+            </div>
+            <h4 className="text-xl font-bold mb-3 group-hover:text-red-500 transition-colors">{f.title}</h4>
+            <p className="text-gray-400 text-sm leading-relaxed">{f.desc}</p>
+          </RevealOnScroll>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+/* =========================================
+   4. APP DOWNLOAD SECTION
    ========================================= */
 
 const AppDownload = () => {
@@ -207,7 +324,7 @@ const AppDownload = () => {
 };
 
 /* =========================================
-   3. FOOTER
+   5. FOOTER
    ========================================= */
 
 const Footer = ({ setCurrentPage }) => {
@@ -284,67 +401,8 @@ const Footer = ({ setCurrentPage }) => {
 };
 
 /* =========================================
-   4. HOME PAGE COMPONENTS
+   6. INNER SECTIONS (About, Services, Pricing)
    ========================================= */
-
-const Hero = () => (
-  <div id="home" className="relative h-screen flex items-center justify-center overflow-hidden bg-black">
-    {/* Dynamic Background */}
-    <div className="absolute inset-0">
-      <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1950&q=80" alt="Gym" className="w-full h-full object-cover opacity-60 animate-[pulse_8s_ease-in-out_infinite]" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent"></div>
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-30"></div>
-    </div>
-
-    <div className="relative z-10 max-w-7xl mx-auto px-4 text-center sm:text-left w-full mt-10">
-      <RevealOnScroll>
-        <div className="inline-block bg-red-600/20 border border-red-500/30 rounded-full px-4 py-1 mb-6 backdrop-blur-sm">
-          <span className="text-red-500 font-bold text-xs tracking-widest uppercase">Welcome to the future of fitness</span>
-        </div>
-        <h1 className="text-5xl md:text-8xl font-black text-white tracking-tighter mb-6 leading-tight">
-          PUSH PAST <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-red-500 to-orange-500">YOUR LIMITS</span>
-        </h1>
-        <p className="mt-4 text-xl text-gray-300 max-w-xl mb-10 leading-relaxed font-light">
-          State-of-the-art equipment, expert trainers, and a community that won't let you quit.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-6">
-          <button className="relative overflow-hidden bg-red-600 text-white font-bold py-4 px-10 rounded-sm uppercase tracking-widest group">
-            <span className="absolute inset-0 w-full h-full bg-white/20 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></span>
-            <span className="relative">Join Now</span>
-          </button>
-          <button className="border border-white/30 text-white hover:border-red-600 hover:text-red-500 font-bold py-4 px-10 rounded-sm uppercase tracking-widest transition-all hover:bg-black/50 backdrop-blur-sm">
-            Book Tour
-          </button>
-        </div>
-      </RevealOnScroll>
-    </div>
-  </div>
-);
-
-const Features = () => (
-  <section className="py-24 bg-zinc-950 text-white relative">
-    <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { icon: <Dumbbell />, title: "Pro Equipment", desc: "Train with the best Hammer Strength machinery." },
-          { icon: <Zap />, title: "HIIT Zones", desc: "Dedicated areas for high-intensity explosive workouts." },
-          { icon: <Users />, title: "Community", desc: "Join a tribe that motivates you to show up every day." },
-          { icon: <Clock />, title: "24/7 Access", desc: "Train on your schedule with round-the-clock access." }
-        ].map((f, i) => (
-          <RevealOnScroll key={i} delay={i * 100} className="bg-zinc-900/50 backdrop-blur-sm p-8 border border-zinc-800 hover:border-red-600 transition-all duration-500 group hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(220,38,38,0.1)] rounded-xl">
-            <div className="mb-6 w-14 h-14 bg-black rounded-lg flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all duration-500 shadow-lg">
-              {React.cloneElement(f.icon, { size: 28 })}
-            </div>
-            <h4 className="text-xl font-bold mb-3 group-hover:text-red-500 transition-colors">{f.title}</h4>
-            <p className="text-gray-400 text-sm leading-relaxed">{f.desc}</p>
-          </RevealOnScroll>
-        ))}
-      </div>
-    </div>
-  </section>
-);
 
 const About = () => (
   <section id="about" className="py-24 bg-black text-white relative overflow-hidden">
@@ -359,7 +417,7 @@ const About = () => (
         <h4 className="text-red-500 font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
           <span className="w-8 h-[2px] bg-red-500"></span> About Us
         </h4>
-        <h2 className="text-4xl md:text-5xl font-black mb-8 leading-tight">WE BUILD <br/><span className="text-stroke-white text-transparent">CHAMPIONS</span></h2>
+        <h2 className="text-4xl md:text-5xl font-black mb-8 leading-tight">WE BUILD <br/><span className="text-stroke">CHAMPIONS</span></h2>
         <p className="text-gray-400 mb-10 text-lg leading-relaxed">
           At Ahead Fitness, we don't just sell memberships. We sell a lifestyle. With over 10 years of excellence, 
           we combine science-based training with raw passion.
@@ -529,7 +587,7 @@ const BMI = () => {
 };
 
 /* =========================================
-   5. CAREERS PAGE
+   7. CAREERS PAGE (Standard)
    ========================================= */
 
 const CareersPage = () => {
@@ -612,7 +670,7 @@ const CareersPage = () => {
 };
 
 /* =========================================
-   6. MAIN APP
+   8. MAIN APP
    ========================================= */
 
 const App = () => {
