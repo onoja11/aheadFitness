@@ -3,7 +3,7 @@ import {
   Menu, X, Dumbbell, Users, Clock, Zap, 
   CheckCircle, ArrowRight, Smartphone, 
   Instagram, Twitter, Facebook, MapPin, 
-  Briefcase, Heart, Mail, Phone, ChevronRight, Star, Play
+  Briefcase, Heart, Mail, Phone, ChevronRight, Play
 } from 'lucide-react';
 import "./App.css"
 
@@ -16,10 +16,6 @@ const AnimationStyles = () => (
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(40px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideInRight {
-      from { transform: translateX(100%); }
-      to { transform: translateX(0); }
     }
     @keyframes pulse-glow {
       0%, 100% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.5); }
@@ -37,10 +33,6 @@ const AnimationStyles = () => (
     /* Text Stroke Effect */
     .text-stroke {
       -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
-      color: transparent;
-    }
-    .text-stroke-red {
-      -webkit-text-stroke: 1px #dc2626;
       color: transparent;
     }
     .bg-grid-pattern {
@@ -72,7 +64,7 @@ const RevealOnScroll = ({ children, className = "", delay = 0 }) => {
 };
 
 /* =========================================
-   1. NAVBAR (Completely Redesigned)
+   1. NAVBAR (Smart Scrolling Logic)
    ========================================= */
 
 const Navbar = ({ currentPage, setCurrentPage }) => {
@@ -85,11 +77,31 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNav = (page, e) => {
-    e?.preventDefault();
-    setCurrentPage(page);
+  // Updated Navigation Handler
+  const handleNav = (target, e) => {
+    if (e) e.preventDefault();
     setIsOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (target === 'careers') {
+      setCurrentPage('careers');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // If we are not on home, switch to home first
+      if (currentPage !== 'home') {
+        setCurrentPage('home');
+        // Wait for Home to render, then scroll
+        setTimeout(() => {
+          const element = document.getElementById(target);
+          if (element) element.scrollIntoView({ behavior: 'smooth' });
+          else window.scrollTo(0,0);
+        }, 100);
+      } else {
+        // Already on home, just scroll
+        const element = document.getElementById(target);
+        if (element) element.scrollIntoView({ behavior: 'smooth' });
+        else window.scrollTo(0,0);
+      }
+    }
   };
 
   return (
@@ -113,8 +125,8 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
                 <a 
                   key={item} 
                   href={`#${item.toLowerCase()}`} 
-                  onClick={(e) => handleNav('home', e)}
-                  className="text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-white relative group transition-colors"
+                  onClick={(e) => handleNav(item.toLowerCase(), e)}
+                  className="text-sm font-bold uppercase tracking-widest text-gray-300 hover:text-white relative group transition-colors cursor-pointer"
                 >
                   {item}
                   <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-red-600 transition-all duration-300 group-hover:w-full"></span>
@@ -128,7 +140,10 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
                 >
                   Careers
                 </button>
-                <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-sm font-bold uppercase tracking-widest text-xs transition-all transform hover:-translate-y-1 shadow-[0_0_15px_rgba(220,38,38,0.4)] clip-slant">
+                <button 
+                  onClick={(e) => handleNav('pricing', e)}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-sm font-bold uppercase tracking-widest text-xs transition-all transform hover:-translate-y-1 shadow-[0_0_15px_rgba(220,38,38,0.4)] clip-slant"
+                >
                   Join Now
                 </button>
               </div>
@@ -154,8 +169,8 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
             <a 
               key={item} 
               href={`#${item.toLowerCase()}`} 
-              onClick={(e) => handleNav('home', e)}
-              className={`text-4xl font-black uppercase text-transparent text-stroke hover:text-white hover:text-stroke-none transition-all duration-300 transform ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
+              onClick={(e) => handleNav(item.toLowerCase(), e)}
+              className={`text-4xl font-black uppercase text-transparent text-stroke hover:text-white hover:text-stroke-none transition-all duration-300 transform cursor-pointer ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
               style={{ transitionDelay: `${idx * 100}ms` }}
             >
               {item}
@@ -175,76 +190,103 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
 };
 
 /* =========================================
-   2. HERO SECTION (Completely Redesigned)
+   2. HERO SECTION (Carousel Updated)
    ========================================= */
 
-const Hero = () => (
-  <div id="home" className="relative h-screen min-h-[700px] flex items-center overflow-hidden bg-black">
-    {/* Dynamic Background with Overlays */}
-    <div className="absolute inset-0 z-0">
-      <img 
-        src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1950&q=80" 
-        alt="Gym Background" 
-        className="w-full h-full object-cover opacity-60 scale-105 animate-[pulse_10s_ease-in-out_infinite]" 
-      />
-      {/* Heavy Gradient Overlay for Text Readability */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60"></div>
-    </div>
+const Hero = () => {
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
 
-    {/* Content */}
-    <div className="relative z-10 max-w-7xl mx-auto px-6 w-full mt-16">
-      <div className="max-w-3xl">
-        <RevealOnScroll>
-          <div className="flex items-center gap-3 mb-6">
-            <span className="h-[2px] w-12 bg-red-600"></span>
-            <span className="text-red-500 font-bold text-sm uppercase tracking-[0.3em]">Est. 2015</span>
+  const heroImages = [
+    "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1950&q=80", // Main Gym
+    "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1950&q=80", // Weights/Intense
+    "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?auto=format&fit=crop&w=1950&q=80"  // Cardio/Runner
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImgIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
+    }, 5000); // Change every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div id="home" className="relative h-screen min-h-[700px] flex items-center overflow-hidden bg-black">
+      
+      {/* Dynamic Background Carousel */}
+      <div className="absolute inset-0 z-0">
+        {heroImages.map((img, index) => (
+          <div 
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentImgIndex ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <img 
+              src={img} 
+              alt={`Gym Background ${index + 1}`} 
+              className="w-full h-full object-cover scale-105" 
+            />
           </div>
+        ))}
+        
+        {/* Overlays for Text Readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60"></div>
+      </div>
 
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white leading-[0.9] tracking-tighter mb-8">
-            FORGE <br />
-            <span className="text-stroke">YOUR</span> <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-900">LEGACY</span>
-          </h1>
+      {/* Content */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full mt-16">
+        <div className="max-w-3xl">
+          <RevealOnScroll>
+            <div className="flex items-center gap-3 mb-6">
+              <span className="h-[2px] w-12 bg-red-600"></span>
+              <span className="text-red-500 font-bold text-sm uppercase tracking-[0.3em]">Est. 2015</span>
+            </div>
 
-          <p className="text-lg md:text-xl text-gray-300 max-w-lg mb-10 leading-relaxed font-light border-l-4 border-red-600 pl-6">
-            Stop wishing. Start working. Join the elite fitness community dedicated to breaking limits and setting new standards.
-          </p>
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white leading-[0.9] tracking-tighter mb-8">
+              FORGE <br />
+              <span className="text-stroke">YOUR</span> <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-red-900">LEGACY</span>
+            </h1>
 
-          <div className="flex flex-col sm:flex-row gap-5">
-            <button className="bg-red-600 text-white px-10 py-4 font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-[0_0_20px_rgba(220,38,38,0.5)] clip-slant flex items-center justify-center gap-2 group">
-              Start Trial <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
-            </button>
-            <button className="border border-white/30 text-white px-10 py-4 font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
-              <Play size={18} fill="currentColor" /> Watch Video
-            </button>
-          </div>
-        </RevealOnScroll>
+            <p className="text-lg md:text-xl text-gray-300 max-w-lg mb-10 leading-relaxed font-light border-l-4 border-red-600 pl-6">
+              Stop wishing. Start working. Join the elite fitness community dedicated to breaking limits and setting new standards.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-5">
+              <button 
+                onClick={() => document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' })}
+                className="bg-red-600 text-white px-10 py-4 font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-[0_0_20px_rgba(220,38,38,0.5)] clip-slant flex items-center justify-center gap-2 group"
+              >
+                Start Trial <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />
+              </button>
+            </div>
+          </RevealOnScroll>
+        </div>
+      </div>
+
+      {/* Decorative Elements */}
+      <div className="absolute bottom-10 right-10 hidden md:flex items-center gap-12 z-10">
+        <div>
+          <h4 className="text-3xl font-black text-white">01</h4>
+          <p className="text-xs text-gray-400 uppercase tracking-widest">Motivation</p>
+        </div>
+        <div className="h-12 w-[1px] bg-white/20"></div>
+        <div>
+          <h4 className="text-3xl font-black text-white">02</h4>
+          <p className="text-xs text-gray-400 uppercase tracking-widest">Discipline</p>
+        </div>
+        <div className="h-12 w-[1px] bg-white/20"></div>
+        <div>
+          <h4 className="text-3xl font-black text-white">03</h4>
+          <p className="text-xs text-gray-400 uppercase tracking-widest">Success</p>
+        </div>
       </div>
     </div>
-
-    {/* Decorative Elements */}
-    <div className="absolute bottom-10 right-10 hidden md:flex items-center gap-12 z-10">
-      <div>
-        <h4 className="text-3xl font-black text-white">01</h4>
-        <p className="text-xs text-gray-400 uppercase tracking-widest">Motivation</p>
-      </div>
-      <div className="h-12 w-[1px] bg-white/20"></div>
-      <div>
-        <h4 className="text-3xl font-black text-white">02</h4>
-        <p className="text-xs text-gray-400 uppercase tracking-widest">Discipline</p>
-      </div>
-      <div className="h-12 w-[1px] bg-white/20"></div>
-      <div>
-        <h4 className="text-3xl font-black text-white">03</h4>
-        <p className="text-xs text-gray-400 uppercase tracking-widest">Success</p>
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 /* =========================================
-   3. FEATURES SECTION (Standard)
+   3. FEATURES SECTION
    ========================================= */
 
 const Features = () => (
@@ -328,6 +370,24 @@ const AppDownload = () => {
    ========================================= */
 
 const Footer = ({ setCurrentPage }) => {
+  // Helper for footer links to handle smooth scroll
+  const handleFooterLink = (target) => {
+    if (target === 'careers') {
+      setCurrentPage('careers');
+      window.scrollTo(0,0);
+    } else {
+      if (document.getElementById(target)) {
+        setCurrentPage('home');
+        setTimeout(() => {
+           document.getElementById(target).scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      } else {
+        setCurrentPage('home');
+        window.scrollTo(0,0);
+      }
+    }
+  };
+
   return (
     <footer className="bg-zinc-950 text-white pt-32 pb-8 border-t border-zinc-900 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -355,7 +415,7 @@ const Footer = ({ setCurrentPage }) => {
             </h4>
             <ul className="space-y-3 text-gray-400 text-sm">
               {['Home', 'Careers', 'Services', 'Pricing'].map(link => (
-                <li key={link} onClick={() => { setCurrentPage(link === 'Home' ? 'home' : link === 'Careers' ? 'careers' : 'home'); window.scrollTo(0,0); }} 
+                <li key={link} onClick={() => handleFooterLink(link.toLowerCase())} 
                     className="hover:text-red-500 cursor-pointer transition-colors flex items-center hover:translate-x-2 duration-300">
                   <ChevronRight size={14} className="mr-2 text-red-600" /> {link}
                 </li>
@@ -454,7 +514,7 @@ const Services = () => (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
           { title: "Personal Training", img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800" },
-          { title: "Group Fitness", img: "https://images.unsplash.com/photo-1574680096141-1cddd70fb668?w=800" },
+          { title: "Group Fitness", img: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop" },
           { title: "Body Building", img: "https://images.unsplash.com/photo-1534367507873-d2d7e24c797f?w=800" },
           { title: "Strength", img: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800" }
         ].map((s, i) => (
@@ -587,7 +647,7 @@ const BMI = () => {
 };
 
 /* =========================================
-   7. CAREERS PAGE (Standard)
+   7. CAREERS PAGE
    ========================================= */
 
 const CareersPage = () => {
